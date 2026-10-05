@@ -2,8 +2,6 @@
  * Provider catalog data — extracted from providers.ts (god-file decomposition).
  * Pure data literal; re-exported by the providers.ts barrel. No behavior change.
  */
-import { GITLAB_DUO_OAUTH_SETUP_MESSAGE } from "@/shared/constants/gitlabDuoSetupMessage";
-
 const ALL_OAUTH_PROVIDERS = {
   claude: {
     id: "claude",
