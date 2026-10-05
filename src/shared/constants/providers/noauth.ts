@@ -2,7 +2,7 @@
  * Provider catalog data — extracted from providers.ts (god-file decomposition).
  * Pure data literal; re-exported by the providers.ts barrel. No behavior change.
  */
-export const NOAUTH_PROVIDERS = {
+const ALL_NOAUTH_PROVIDERS = {
   "devin-cli-agentic": {
     id: "devin-cli-agentic",
     alias: "dva",
@@ -190,6 +190,11 @@ export const NOAUTH_PROVIDERS = {
       text: "AI Horde routes to volunteer-run workers, so chat and image jobs can take minutes and tool calling is unavailable. Chat models come from the live oai.aihorde.net catalog. Image models are listed only while Horde reports at least one worker. An optional aihorde.net API key raises queue priority (kudos).",
     },
   },
+};
+
+// Auro deployment profile: keep only the no-auth provider we explicitly use.
+export const NOAUTH_PROVIDERS = {
+  opencode: ALL_NOAUTH_PROVIDERS.opencode,
 };
 
 // Provider-level proxy controls are exposed only for transports whose complete
