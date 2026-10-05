@@ -20,22 +20,7 @@ export const FREE_PROVIDERS = {};
 
 // No-auth Providers
 
-export const FREE_APIKEY_PROVIDER_IDS = new Set([
-  "qoder",
-  "opencode",
-  "dahl",
-  // auggie is a fully local, credential-less CLI passthrough (auth handled by
-  // `auggie login` outside OmniRoute). Admitted here purely so POST /api/providers
-  // accepts an optional connection row for display/priority/testStatus tracking —
-  // no apiKey is ever required or sent upstream.
-  "auggie",
-  // zcode is a local app-server backend; auth stays in the ZCode profile.
-  "zcode",
-  // AI Horde works anonymously (`0000000000`) and also accepts a free registered
-  // key for higher queue priority. The no-auth page still enables the provider;
-  // this flag admits an optional apikey connection so that stored key is used.
-  "aihorde",
-]);
+export const FREE_APIKEY_PROVIDER_IDS = new Set(["opencode"]);
 
 export function supportsApiKeyOnFreeProvider(providerId: unknown): boolean {
   return typeof providerId === "string" && FREE_APIKEY_PROVIDER_IDS.has(providerId);
@@ -305,16 +290,13 @@ export function supportsBulkApiKey(providerId: unknown): boolean {
 
 // ── System Providers (virtual, not user-connectable) ──────────────────────────
 
+// Auro deployment profile: only the selected free/plan-backed AI providers
+// are exposed. System providers remain available because they are internal
+// routing primitives, not user-facing AI vendors.
 const _PROVIDER_SECTIONS = [
   NOAUTH_PROVIDERS,
   OAUTH_PROVIDERS,
   APIKEY_PROVIDERS,
-  WEB_COOKIE_PROVIDERS,
-  LOCAL_PROVIDERS,
-  SEARCH_PROVIDERS,
-  AUDIO_ONLY_PROVIDERS,
-  UPSTREAM_PROXY_PROVIDERS,
-  CLOUD_AGENT_PROVIDERS,
   SYSTEM_PROVIDERS,
 ] as const;
 
@@ -325,12 +307,6 @@ function ensureProvidersValidated() {
   validateProviders(NOAUTH_PROVIDERS, "NOAUTH_PROVIDERS");
   validateProviders(OAUTH_PROVIDERS, "OAUTH_PROVIDERS");
   validateProviders(APIKEY_PROVIDERS, "APIKEY_PROVIDERS");
-  validateProviders(WEB_COOKIE_PROVIDERS, "WEB_COOKIE_PROVIDERS");
-  validateProviders(LOCAL_PROVIDERS, "LOCAL_PROVIDERS");
-  validateProviders(SEARCH_PROVIDERS, "SEARCH_PROVIDERS");
-  validateProviders(AUDIO_ONLY_PROVIDERS, "AUDIO_ONLY_PROVIDERS");
-  validateProviders(UPSTREAM_PROXY_PROVIDERS, "UPSTREAM_PROXY_PROVIDERS");
-  validateProviders(CLOUD_AGENT_PROVIDERS, "CLOUD_AGENT_PROVIDERS");
   _validated = true;
 }
 
@@ -380,12 +356,6 @@ export function getProviderById(id: string) {
     (NOAUTH_PROVIDERS as Record<string, any>)[id] ??
     (OAUTH_PROVIDERS as Record<string, any>)[id] ??
     (APIKEY_PROVIDERS as Record<string, any>)[id] ??
-    (WEB_COOKIE_PROVIDERS as Record<string, any>)[id] ??
-    (LOCAL_PROVIDERS as Record<string, any>)[id] ??
-    (SEARCH_PROVIDERS as Record<string, any>)[id] ??
-    (AUDIO_ONLY_PROVIDERS as Record<string, any>)[id] ??
-    (UPSTREAM_PROXY_PROVIDERS as Record<string, any>)[id] ??
-    (CLOUD_AGENT_PROVIDERS as Record<string, any>)[id] ??
     (SYSTEM_PROVIDERS as Record<string, any>)[id] ??
     undefined
   );
