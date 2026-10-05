@@ -2,7 +2,7 @@
  * APIKEY provider catalog — enterprise-cloud family (hyperscaler & enterprise cloud platforms).
  * Pure data; merged by apikey/index.ts via spread (god-file decomposition; semantic split).
  */
-const APIKEY_PROVIDERS_ENTERPRISE = {
+const ALL_APIKEY_PROVIDERS_ENTERPRISE = {
   "cloudflare-ai": {
     id: "cloudflare-ai",
     serviceKinds: ["llm"],
