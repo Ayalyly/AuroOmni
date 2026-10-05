@@ -218,6 +218,30 @@ export function resolveNextBuildEnv(baseEnv = process.env, platform = process.pl
   return env;
 }
 
+async function syncWorkersNextBuildCache(rootDir = projectRoot, fsImpl = fs, phase = "restore") {
+  // Cloudflare Workers Builds automatically caches Next.js at .next/cache.
+  // OmniRoute uses a custom Next distDir (.build/next), so without this bridge
+  // the Workers cache is restored/saved in the wrong location and every build
+  // starts with an empty Next cache.
+  const cloudflareCacheDir = path.join(rootDir, ".next", "cache");
+  const actualCacheDir = path.join(distDir, "cache");
+
+  if (phase === "restore") {
+    if (!(await exists(cloudflareCacheDir))) return;
+    await fsImpl.rm(actualCacheDir, { recursive: true, force: true });
+    await fsImpl.mkdir(path.dirname(actualCacheDir), { recursive: true });
+    await fsImpl.cp(cloudflareCacheDir, actualCacheDir, { recursive: true });
+    console.log("[build-next-isolated] Restored Next.js cache from .next/cache");
+    return;
+  }
+
+  if (!(await exists(actualCacheDir))) return;
+  await fsImpl.rm(cloudflareCacheDir, { recursive: true, force: true });
+  await fsImpl.mkdir(path.dirname(cloudflareCacheDir), { recursive: true });
+  await fsImpl.cp(actualCacheDir, cloudflareCacheDir, { recursive: true });
+  console.log("[build-next-isolated] Saved Next.js cache to .next/cache for Workers Builds");
+}
+
 async function resetStandaloneOutput(rootDir = projectRoot, fsImpl = fs) {
   // Use the module-level distDir so NEXT_DIST_DIR is respected
   const resolvedDistDir =
@@ -308,6 +332,7 @@ export async function main() {
       process.once("SIGTERM", onFatalSignal);
     }
 
+    await syncWorkersNextBuildCache(projectRoot, fs, "restore");
     await resetStandaloneOutput(projectRoot);
 
     const result = await runNextBuild();
@@ -384,6 +409,7 @@ export async function main() {
         "[build-next-isolated] Skipped standalone packaging (standalone disabled for fast compile)"
       );
     }
+    await syncWorkersNextBuildCache(projectRoot, fs, "save");
     process.exitCode = result.code;
   } catch (error) {
     console.error("[build-next-isolated] Build failed:", error);
