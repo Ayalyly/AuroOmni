@@ -4,7 +4,7 @@
  */
 import { GITLAB_DUO_OAUTH_SETUP_MESSAGE } from "@/shared/constants/gitlabDuoSetupMessage";
 
-export const OAUTH_PROVIDERS = {
+const ALL_OAUTH_PROVIDERS = {
   "ghe-copilot": {
     id: "ghe-copilot",
     serviceKinds: ["llm"],
@@ -322,4 +322,11 @@ export const OAUTH_PROVIDERS = {
     authHint:
       "Sign in with the Muse Code device flow (same as `muse login` / CLIProxyAPI `-meta-login`) to use a Muse subscription, or paste a META_API_KEY. Device login keeps the durable dca token and mints the inference key; a 401 remints that key. Wire format is OpenAI Responses (POST /responses).",
   },
+};
+
+// Auro deployment profile: keep only the selected OAuth providers.
+export const OAUTH_PROVIDERS = {
+  claude: ALL_OAUTH_PROVIDERS.claude,
+  antigravity: ALL_OAUTH_PROVIDERS.antigravity,
+  codex: ALL_OAUTH_PROVIDERS.codex,
 };
