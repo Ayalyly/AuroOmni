@@ -136,15 +136,14 @@ function runNextBuild() {
 }
 
 export function resolveNextBuildBundlerFlag(baseEnv = process.env) {
-  // Turbopack is the default; OMNIROUTE_USE_TURBOPACK=0 is the documented escape hatch
-  // to webpack (Windows, native-binding trouble, RAM-constrained machines — #6409, and
-  // docs/reference/ENVIRONMENT.md). The choice is env-only ON PURPOSE: the variable is
-  // the operator's control and CI sets it explicitly, so sniffing the runtime here would
-  // silently override an operator who asked for Turbopack.
-  if (baseEnv.OMNIROUTE_USE_TURBOPACK === "0") {
-    return "--webpack";
+  // Workers Builds has a hard 20-minute build timeout. OmniRoute's production
+  // Turbopack build can exceed that limit on the shared Workers Builds runners.
+  // Default to webpack for predictable CI build times; operators can explicitly
+  // opt back into Turbopack with OMNIROUTE_USE_TURBOPACK=1.
+  if (baseEnv.OMNIROUTE_USE_TURBOPACK === "1") {
+    return "--turbopack";
   }
-  return "--turbopack";
+  return "--webpack";
 }
 
 /**
