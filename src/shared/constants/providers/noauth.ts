@@ -23,3 +23,13 @@ const ALL_NOAUTH_PROVIDERS = {
     },
   }
 };
+
+export const NOAUTH_PROVIDERS = {
+  opencode: ALL_NOAUTH_PROVIDERS.opencode,
+};
+
+export const NOAUTH_PROVIDER_PROXY_SUPPORTED = new Set(["opencode"]);
+
+export function supportsNoAuthProviderProxy(providerId: string): boolean {
+  return NOAUTH_PROVIDER_PROXY_SUPPORTED.has(providerId);
+}
