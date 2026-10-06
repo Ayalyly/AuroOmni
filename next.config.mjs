@@ -14,6 +14,7 @@ import { shouldBuildStandalone } from "./scripts/build/backendOnlyPages.mjs";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const distDir = process.env.NEXT_DIST_DIR || ".build/next";
+const isBackendWorkersBuild = isBackendOnlyBuild(process.env);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const scriptSrc =
   process.env.NODE_ENV === "development"
@@ -800,6 +801,5 @@ const nextConfig = {
 // Backend-only Workers builds do not need the documentation MDX pipeline.
 // Skipping createMDX/withMDX avoids loading and scanning the Fumadocs content graph
 // before webpack even starts compiling the API routes.
-const isBackendWorkersBuild = isBackendOnlyBuild(process.env);
 const finalConfig = isBackendWorkersBuild ? nextConfig : withMDX(nextConfig);
 export default withNextIntl(finalConfig);
