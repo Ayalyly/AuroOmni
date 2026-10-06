@@ -10,7 +10,10 @@ import {
   nonPageRoutePrefixes,
   resolveDashboardEmbedMode,
 } from "./scripts/build/dashboardEmbed.mjs";
-import {\n  isBackendOnlyBuild,\n  shouldBuildStandalone,\n} from "./scripts/build/backendOnlyPages.mjs";
+import {
+  isBackendOnlyBuild,
+  shouldBuildStandalone,
+} from "./scripts/build/backendOnlyPages.mjs";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const distDir = process.env.NEXT_DIST_DIR || ".build/next";
