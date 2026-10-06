@@ -63,6 +63,25 @@ const UI_BASENAME_RE =
   /^(page|layout|template|loading|error|global-error|not-found|default)\.(tsx|jsx|ts|js)$/;
 const ROUTE_FILE_RE = /[\\/]route\.(ts|js|tsx|jsx)$/;
 
+// API-only Workers profile: keep only the gateway endpoints Auro needs.
+const BACKEND_ROUTE_ALLOWLIST = new Set([
+  "v1/chat/completions/route.ts",
+  "v1/models/route.ts",
+  "v1/models/[...model]/route.ts",
+  "[...omnirouteCatchAll]/route.ts",
+  "[...omnirouteApiCatchAll]/route.ts",
+  "health/route.ts",
+  "version/route.ts",
+  "omniroute/status/route.ts",
+]);
+
+function isBackendRouteAllowed(file, appDir) {
+  const rel = path.relative(path.join(appDir, "api"), file).split(path.sep).join("/");
+  return BACKEND_ROUTE_ALLOWLIST.has(rel);
+}
+
+const BACKEND_ROUTE_STUB = `${HEADER}export async function GET() { return Response.json({ error: { message: "Route disabled in backend-only deployment", type: "not_found" } }, { status: 404 }); }\nexport async function POST() { return GET(); }\nexport async function PUT() { return GET(); }\nexport async function PATCH() { return GET(); }\nexport async function DELETE() { return GET(); }\nexport async function OPTIONS() { return new Response(null, { status: 204 }); }\n`;
+
 /**
  * Strip a leading `"use server"` module directive. Some OmniRoute API Route Handlers
  * (`src/app/api/**\/route.ts`) carry a top-level `"use server"` — which registers the module
@@ -209,6 +228,24 @@ export function stubDashboardPages(rootDir = process.cwd(), log = console) {
     // Route Handlers with a leading "use server" directive: strip the directive so the module
     // is no longer registered as a Server-Actions provider (the HTTP endpoint is unchanged).
     if (ROUTE_FILE_RE.test(file)) {
+      // In backend-only mode, compile only the small API surface required by Auro.
+      if (isBackendOnlyBuild() && !isBackendRouteAllowed(file, appDir)) {
+        let original;
+        try {
+          original = fs.readFileSync(file, "utf8");
+        } catch {
+          continue;
+        }
+        if (original.includes(BACKEND_ONLY_STUB_MARKER)) continue;
+        try {
+          fs.writeFileSync(file, BACKEND_ROUTE_STUB, "utf8");
+          stubbed.push({ file, original });
+        } catch (err) {
+          log.warn?.(`[backend-only] Could not stub unused API route ${file}: ${err?.message || err}`);
+        }
+        continue;
+      }
+
       let original;
       try {
         original = fs.readFileSync(file, "utf8");
