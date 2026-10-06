@@ -224,7 +224,7 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   // Issue #67: enable React Compiler — automates memoization, removes manual useCallback/useMemo debt.
   // See: https://next.dev/blog/react-compiler
-  reactCompiler: true,
+  reactCompiler: !isBackendWorkersBuild,
   // OmniRoute is a proxy for AI APIs — request bodies routinely include
   // multi-MB payloads (vision models, image edits, base64-encoded files,
   // long chat histories with embedded images). Next.js's Server Action
@@ -387,7 +387,9 @@ const nextConfig = {
     "util",
     "process",
   ],
-  transpilePackages: ["@omniroute/open-sse", "@lobehub/icons", "fumadocs-ui", "fumadocs-core"],
+  transpilePackages: isBackendWorkersBuild
+    ? ["@omniroute/open-sse"]
+    : ["@omniroute/open-sse", "@lobehub/icons", "fumadocs-ui", "fumadocs-core"],
   allowedDevOrigins: ["localhost", "127.0.0.1", "192.168.0.250"],
   typescript: {
     // TODO: Re-enable after fixing all sub-component useTranslations scope issues
@@ -795,6 +797,9 @@ const nextConfig = {
   },
 };
 
-const withMDX = createMDX();
-
-export default withMDX(withNextIntl(nextConfig));
+// Backend-only Workers builds do not need the documentation MDX pipeline.
+// Skipping createMDX/withMDX avoids loading and scanning the Fumadocs content graph
+// before webpack even starts compiling the API routes.
+const isBackendWorkersBuild = isBackendOnlyBuild(process.env);
+const finalConfig = isBackendWorkersBuild ? nextConfig : withMDX(nextConfig);
+export default withNextIntl(finalConfig);
