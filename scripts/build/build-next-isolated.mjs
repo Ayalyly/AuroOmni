@@ -322,12 +322,13 @@ export async function main() {
         "[build-next-isolated] OMNIROUTE_BUILD_BACKEND_ONLY set — building API only (dashboard UI stubbed)"
       );
       stubbedPages = stubDashboardPages(projectRoot);
-      if (isContributorBuild()) {
-        stubbedPages.push(...stubContributorInstrumentation(projectRoot));
-        console.log(
-          "[build-next-isolated] Contributor profile: instrumentation entrypoint stubbed for compile-only validation"
-        );
-      }
+      // API-only Workers builds do not need startup instrumentation. It pulls in the
+      // full server bootstrap graph before the API bundle is even compiled, so keep the
+      // runtime entrypoints intact but stub them for this build and restore them afterward.
+      stubbedPages.push(...stubContributorInstrumentation(projectRoot));
+      console.log(
+        "[build-next-isolated] Backend-only build: instrumentation entrypoints stubbed"
+      );
       process.once("SIGINT", onFatalSignal);
       process.once("SIGTERM", onFatalSignal);
     }
