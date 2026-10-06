@@ -43,7 +43,6 @@ await build({
   mainFields: ["browser", "module", "main"],
   plugins: [aliasPlugin],
   sourcemap: false,
-  metafile: path.join(outDir, "meta.json"),
   legalComments: "none",
   treeShaking: true,
   logLevel: "info",
